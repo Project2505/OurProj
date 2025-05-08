@@ -22,6 +22,7 @@ create table Users
 	UserBio text,
 	UserCountry text not null,
 	UserTown text not null,
+	Userspecialization text not null,
 	UserCreatedAt timestamp default now(),
 	UserIsDeleted boolean default false
 );
@@ -318,6 +319,23 @@ create table UserPersonalChat
     constraint unique_user_personal_chat unique(UserID, PersonalChatID) 
 );
 
+-- таблица-связка пользователей с командами
+create table UserTeams
+(
+	UserTeamsID serial primary key,
+	UserID bigint not null,
+	TeamID bigint not null,
+
+	constraint fk_userTeams_user foreign key (UserID)
+        references Users(UserID)
+        on update cascade,
+
+    constraint fk_personalteams_team foreign key (TeamID)
+        references Teams(TeamID)
+        on update cascade,
+	
+	constraint unique_user_team unique(UserID, TeamID)
+);
 
 --=============================================
 --	Создание индексов
