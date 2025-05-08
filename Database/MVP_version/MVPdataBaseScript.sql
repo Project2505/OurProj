@@ -2,8 +2,7 @@
 --	Создание базы данных
 --=============================================
 
-create database SquadUp
-
+-- create database SquadUp
 
 --=============================================
 --	Создание сущностей
@@ -63,7 +62,7 @@ create table Teams
 	TeamID serial primary key,
 	TeamUsers bigint,
 	ProjectID bigint not null,
-	TeamSize int not null default false,
+	TeamSize int not null default 1, -- 1 т.к. создатель команды также её член
 	TeamFullness int not null,
 	TeamCreatedAt timestamp default now(),
 
@@ -82,7 +81,7 @@ create table IssueBoards
 	IssueBoardAvatar text,
 
 	constraint fk_IssueBoardsProj foreign key (ProjectID)
-		references Project(ProjectID) -- связь доски задач с проектом
+		references Projects(ProjectID) -- связь доски задач с проектом
 		on update cascade
 );
 
@@ -91,15 +90,15 @@ create table Issues
 (
 	IssueID serial primary key,
 	IssueName text not null,
-	IssueBoardID bigint
+	IssueBoardID bigint,
 	IssueDescription text,
 	IssuePhotos text,
-	IssueVideo text
+	IssueVideo text,
 	IssueAvtor bigint not null,
 	IssueExecutor bigint,
 
 	constraint fk_issueIssueBoard foreign key (IssueBoardID)
-		references IssueBoard(IssueBoardID) -- связь заданий с их досками
+		references IssueBoards(IssueBoardID) -- связь заданий с их досками
 		on update cascade
 );
 
@@ -121,7 +120,7 @@ create table IssuesComments
 
 	constraint fk_issueCommentUser foreign key (IssueCommentSender)
 		references Users(UserID) -- связь отправителя сообщения (юзера) и самого сообщения
-		on update cascade,
+		on update cascade
 );
 
 -- таблица ответов на комментарий под задачей
@@ -129,15 +128,15 @@ create table CommentRecieves
 (
 	CommentRecieveID serial primary key,
 	CommentParent bigint not null,
-	CommentChild bihint not null,
+	CommentChild bigint not null,
 
-	constraint fk_commentRecieve primary key (CommentParent)
+	constraint fk_commentRecieve_parent foreign key (CommentParent)
 		references IssuesComments(IssueCommentID) -- связь сообщения родителя с сообщением
 		on update cascade,
 	
-	constraint fk_commentRecieve primary key (CommentParent)
+	constraint fk_commentRecieve_child foreign key (CommentChild)
 		references IssuesComments(IssueCommentID) -- связь дочернего сообщения с самим сообщением
-		on update cascade,
+		on update cascade
 );
 
 -- таблица чата для HR и наёмника :>
@@ -145,14 +144,14 @@ create table ChatHR
 (
 	ChatHRid serial primary key,
 	ChatHRname text,
-	ChatHRpeople bihint not null,
-	ChatPeople bihint not null,
+	ChatHRpeople bigint not null,
+	ChatPeople bigint not null,
 
-	constraint fk_hr_user foreign key (HRuserID) 
+	constraint fk_hr_user foreign key (ChatHRpeople) 
 		references Users(UserID) --  связь чата с HR (юзером)
 		on update cascade,
     
-	constraint fk_candidate_user foreign key (CandidateUserID) 
+	constraint fk_candidate_user foreign key (ChatPeople) 
 		references Users(UserID) -- связь чата с претендентом (юзером)
 		on update cascade
 );
@@ -160,8 +159,8 @@ create table ChatHR
 -- таблица личных чатов
 create table PersonalChats
 (
-	PersonslChatID serial primary key,
-	PersonalChatName text not null,
+    PersonalChatID serial primary key,
+    PersonalChatName text not null
 );
 
 -- таблица групповых чатов
@@ -174,7 +173,7 @@ create table GroupChats (
     is_active boolean default true,    -- флаг активности чата
     
     constraint fk_creator_user foreign key (created_by_user_id) 
-        references users(user_id)
+        references users(UserID)
         on update cascade
 );
 
@@ -191,14 +190,11 @@ create table GroupChatParticipants (
         on delete cascade,
         
     constraint fk_user foreign key (user_id) 
-        references users(user_id)
+        references users(UserID)
         on delete cascade,
         
     constraint unique_group_user_pair unique (group_chat_id, user_id)
 );
-
--- обновление таблицы сообщений для поддержки групповых чатов
-alter table messages add column group_chat_id bigint;
 
 -- таблица сообщений для чатов
 create table Messages
@@ -206,8 +202,8 @@ create table Messages
 	MessageID serial primary key,
 	PersonalChatID bigint,
 	ChatHRid bigint,
-	GroupChatID bigin,
-	MessageSender big int not null,
+	GroupChatID bigint,
+	MessageSender bigint not null,
 	MessageText text,
 	MessagePhoto text,
 	MessageVideo text,
@@ -222,13 +218,13 @@ create table Messages
 		references Users(UserID) -- связь сообщения с чатом для наёма
 		on update cascade,
 
-	constraint fk_group_chat 
-    	foreign key (group_chat_id) references groupchats(group_chat_id)
+	constraint fk_group_chat foreign key (GroupChatID) 
+		references groupchats(group_chat_id)
 		on update cascade,
 
 	constraint fk_messageMessageSender foreign key (MessageSender) 
 		references Users(UserID) --  связь сообщения с отправителем (пользователем)
-		on update cascade,
+		on update cascade
 );
 
 -- таблица ответов на сообщения
@@ -236,7 +232,30 @@ create table MessageRecieves
 (
 	MessageRecieveID serial primary key,
 	MessageParent bigint not null,
-	MessageChild bihint not null
+	MessageChild bigint not null
+);
+
+-- таблица истории изменений задачи
+create table HistoryIssue
+(
+    HistoryID serial primary key,
+    IssueID bigint not null,
+    ChangedByUserID bigint not null,
+    ChangeDate timestamp default now(),
+    ChangeType text not null,
+    FieldChanged text,
+    OldValue text,
+    NewValue text,
+    ChangeComment text,
+    
+    constraint fk_history_issue foreign key (IssueID)
+        references Issues(IssueID)
+        on update cascade
+        on delete cascade,
+        
+    constraint fk_history_user foreign key (ChangedByUserID)
+        references Users(UserID)
+        on update cascade
 );
 
 
@@ -257,7 +276,7 @@ create table UserSkills
 		on update cascade,
 
 	constraint fk_skillUser foreign key (SkillID)
-		references Skill(SkillID)
+		references Skills(SkillID)
 		on update cascade,
 
 	constraint unique_userSkill unique(UserID, SkillID)
@@ -274,46 +293,95 @@ create table UserIssueBoards
 		references Users(UserID)
 		on update cascade,
 
-	constraint fk_issueBoardUser foreign key (SkillID)
+	constraint fk_issueBoardUser foreign key (IssueBoardID)
 		references IssueBoards(IssueBoardID)
 		on update cascade,
 
 	constraint unique_userIssueBoard unique(UserID, IssueBoardID) 
 );
 
+-- таблица-связка персональных чатов с пользователями
 create table UserPersonalChat
 (
-	UserPersonalChatID serial primary key
-	UserID bigint not null,
-	PersonslChatID bigint not null,
+    UserPersonalChatID serial primary key,
+    UserID bigint not null,
+    PersonalChatID bigint not null,
 
-	constraint fk_userPersonalChat foreign key (UserID)
-		references Users(UserID)
-		on update cascade,
+    constraint fk_userPersonalChat foreign key (UserID)
+        references Users(UserID)
+        on update cascade,
 
-	constraint fk_iPersonalChatUser foreign key (SkillID)
-		references PersonalChats(UserPersonalChatID)
-		on update cascade,
+    constraint fk_personalChatUser foreign key (PersonalChatID)
+        references PersonalChats(PersonalChatID)
+        on update cascade,
 
-	constraint unique_userPersonalChat unique(UserID, UserPersonalChatID) 
+    constraint unique_user_personal_chat unique(UserID, PersonalChatID) 
 );
 
 
+--=============================================
+--	Создание индексов
+--=============================================
 
+-- Индексы для таблицы Users
+create index idx_users_alias on Users(UserAlias);
+create index idx_users_country_town on Users(UserCountry, UserTown);
+create index idx_users_created_at on Users(UserCreatedAt);
 
+-- Индексы для таблицы Projects
+create index idx_projects_name on Projects(ProjectName);
+create index idx_projects_location on Projects(ProjectCountry, ProjectTown);
+create index idx_projects_created_at on Projects(ProjectCreatedAt);
 
+-- Индексы для таблицы Teams
+create index idx_teams_project on Teams(ProjectID);
+create index idx_teams_fullness on Teams(TeamFullness);
 
+-- Индексы для таблицы Issues
+create index idx_issues_board on Issues(IssueBoardID);
+create index idx_issues_author on Issues(IssueAvtor);
+create index idx_issues_executor on Issues(IssueExecutor);
+create index idx_issues_name on Issues(IssueName);
 
+-- Индексы для таблицы IssuesComments
+create index idx_issue_comments_issue on IssuesComments(IssueID);
+create index idx_issue_comments_sender on IssuesComments(IssueCommentSender);
+create index idx_issue_comments_created on IssuesComments(IssueCommentCreatedAt);
 
+-- Индексы для таблицы CommentRecieves
+create index idx_comment_parent on CommentRecieves(CommentParent);
+create index idx_comment_child on CommentRecieves(CommentChild);
 
+-- Индексы для таблицы Messages
+create index idx_messages_sender on Messages(MessageSender);
+create index idx_messages_send_date on Messages(MessageSendAt);
+create index idx_messages_personal_chat on Messages(PersonalChatID);
+create index idx_messages_hr_chat on Messages(ChatHRid);
+create index idx_messages_group_chat on Messages(GroupChatID);
 
+-- Индексы для таблицы MessageRecieves
+create index idx_message_parent on MessageRecieves(MessageParent);
+create index idx_message_child on MessageRecieves(MessageChild);
 
+-- Индексы для таблицы HistoryIssue
+create index idx_history_issue on HistoryIssue(IssueID);
+create index idx_history_user on HistoryIssue(ChangedByUserID);
+create index idx_history_date on HistoryIssue(ChangeDate);
+create index idx_history_type on HistoryIssue(ChangeType);
 
+-- Индексы для таблицы UserSkills
+create index idx_user_skills_user on UserSkills(UserID);
+create index idx_user_skills_skill on UserSkills(SkillID);
 
+-- Индексы для таблицы UserIssueBoards
+create index idx_user_issue_boards_user on UserIssueBoards(UserID);
+create index idx_user_issue_boards_board on UserIssueBoards(IssueBoardID);
 
+-- Индексы для таблицы UserPersonalChat
+create index idx_user_personal_chat_user on UserPersonalChat(UserID);
+create index idx_user_personal_chat_chat on UserPersonalChat(PersonalChatID);
 
-
-
-
-
-
+-- Индексы для таблицы GroupChatParticipants
+create index idx_group_participants_user on GroupChatParticipants(user_id);
+create index idx_group_participants_chat on GroupChatParticipants(group_chat_id);
+create index idx_group_participants_last_seen on GroupChatParticipants(last_seen_at);
