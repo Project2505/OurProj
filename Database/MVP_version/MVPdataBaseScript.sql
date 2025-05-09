@@ -251,8 +251,7 @@ create table HistoryIssue
     
     constraint fk_history_issue foreign key (IssueID)
         references Issues(IssueID)
-        on update cascade
-        on delete cascade,
+        on update cascade,
         
     constraint fk_history_user foreign key (ChangedByUserID)
         references Users(UserID)
@@ -266,28 +265,33 @@ create table Favourites
 	UserID bigint not null,
 	SavedUserID bigint not null
 );
+
+create table Resume
+(
+	ResumeID serial primary key,
+	UserID bigint not null,
+	SkillID bigint,
+	ResumeBio text,
+	ResumeCreatedAt timestamp default now(),
+	ResumeIsDeleted boolean default false,
+	ResumePhoto text,
+	EducationLevel text,
+	DesiredPosition text not null,
+	ExperienceLevel text,
+	DesiredSalary numeric, 
+	ResumeStatus text,
+	ResumeUpdatedAt timestamp,
+	ResumeCity text,
+
+	 constraint fk_resume_user foreign key (UserID)
+        references Users(UserID)
+        on update cascade
+);
+
+
 --=============================================
 --	Создание таблиц связок
 --=============================================
-
-
--- таблица-связка навыков с пользователями (многие-ко-многим)
-create table UserSkills
-(
-	UserSkillID serial primary key,
-	UserID bigint not null,
-	SkillID bigint not null,
-
-	constraint fk_userSkill foreign key (UserID)
-		references Users(UserID)
-		on update cascade,
-
-	constraint fk_skillUser foreign key (SkillID)
-		references Skills(SkillID)
-		on update cascade,
-
-	constraint unique_userSkill unique(UserID, SkillID)
-);
 
 --  таблица-связка досок задач с пользователями (многие-ко-многим)
 create table UserIssueBoards
@@ -360,6 +364,24 @@ create table UsersFavourites
 	
 	constraint unique_user_favourites unique(UserID, FavouriteID)
 );
+
+create table ResumeSkills (
+    ResumeSkillID serial primary key,
+    ResumeID bigint not null,
+    SkillID bigint not null,
+    
+    constraint fk_resumeSkills_resume foreign key (ResumeID)
+        references Resume(ResumeID)
+        on delete cascade,
+    
+    constraint fk_resumeSkills_skill foreign key (SkillID)
+        references Skills(SkillID)
+        on delete cascade,
+    
+    constraint unique_resume_skill unique (ResumeID, SkillID)
+);
+
+
 --=============================================
 --	Создание индексов
 --=============================================
@@ -409,10 +431,6 @@ create index idx_history_issue on HistoryIssue(IssueID);
 create index idx_history_user on HistoryIssue(ChangedByUserID);
 create index idx_history_date on HistoryIssue(ChangeDate);
 create index idx_history_type on HistoryIssue(ChangeType);
-
--- Индексы для таблицы UserSkills
-create index idx_user_skills_user on UserSkills(UserID);
-create index idx_user_skills_skill on UserSkills(SkillID);
 
 -- Индексы для таблицы UserIssueBoards
 create index idx_user_issue_boards_user on UserIssueBoards(UserID);
