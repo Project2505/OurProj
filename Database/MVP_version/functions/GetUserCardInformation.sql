@@ -3,7 +3,7 @@
 --	пользователей из резюме
 --
 -- Пример вызова:
---		select * from GetCardUserInformation(1);
+--		select * from GetUserCardInformation();
 --
 -- Изменения:
 --
