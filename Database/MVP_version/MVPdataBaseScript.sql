@@ -259,7 +259,13 @@ create table HistoryIssue
         on update cascade
 );
 
-
+-- таблица для сохранения избранных пользователей
+create table Favourites
+(
+	FavouriteID serial primary key,
+	UserID bigint not null,
+	SavedUserID bigint not null
+);
 --=============================================
 --	Создание таблиц связок
 --=============================================
@@ -337,6 +343,23 @@ create table UserTeams
 	constraint unique_user_team unique(UserID, TeamID)
 );
 
+
+create table UsersFavourites
+(
+	UsersFavouriteID serial primary key,
+	UserID bigint not null,
+	FavouriteID bigint not null,
+
+	constraint fk_userfavourites_user foreign key (UserID)
+        references Users(UserID)
+        on update cascade,
+
+    constraint fk_UsersFavourites_FavouriteID foreign key (FavouriteID)
+        references Favourites(FavouriteID)
+        on update cascade,
+	
+	constraint unique_user_favourites unique(UserID, FavouriteID)
+);
 --=============================================
 --	Создание индексов
 --=============================================
