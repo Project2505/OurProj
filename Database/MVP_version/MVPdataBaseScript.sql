@@ -22,7 +22,7 @@ create table Users
 	UserBio text,
 	UserCountry text not null,
 	UserTown text not null,
-	Userspecialization text not null,
+	Userspecialization text,
 	UserCreatedAt timestamp default now(),
 	UserIsDeleted boolean default false
 );
