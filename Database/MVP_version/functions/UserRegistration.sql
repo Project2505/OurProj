@@ -1,3 +1,27 @@
+--======================================================================================
+-- Автор:
+--		Богданов Д.М.
+--
+-- Описание:
+--		процедура для регистрации пользователей
+--		в системе SquadUp
+--
+-- Дата создания:
+--		09.05.2025	
+--
+-- Пример вызова:
+--		CALL UserRegistration(
+--	    p_UserName := 'Иван',
+--	    p_UserSurname := 'Иванов',
+--	    p_UserAlias := 'ivanov',
+--	    p_UserAge := 25,
+--	    p_UserCountry := 'Россия',
+--	    p_UserTown := 'Москва',
+--	    p_UserSpecialization := 'Программист'
+--	);
+--
+-- Изменения:
+--======================================================================================
 
 create procedure UserRegistration
 (
@@ -22,7 +46,7 @@ Language plpgsql
 			if p_UserName is null or p_UserSurname is null or 
        p_UserAlias is null or p_UserAge is null or 
        p_UserCountry is null or p_UserTown is null or 
-       p_UserSpecialization is null THENl
+       p_UserSpecialization is null 
 			   Then raise exception 'Обязательные поля не должны быть пустыми';
 		end if;
 
