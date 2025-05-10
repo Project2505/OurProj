@@ -23,6 +23,8 @@ create table Users
 	UserCountry text not null,
 	UserTown text not null,
 	Userspecialization text,
+	UserPhone text,
+	UserEmail text,
 	UserCreatedAt timestamp default now(),
 	UserIsDeleted boolean default false
 );
@@ -282,6 +284,7 @@ create table Resume
 	ResumeStatus text,
 	ResumeUpdatedAt timestamp,
 	ResumeCity text,
+	ResumeSpecialization text not null,
 
 	 constraint fk_resume_user foreign key (UserID)
         references Users(UserID)
