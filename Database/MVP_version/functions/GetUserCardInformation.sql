@@ -3,7 +3,7 @@
 --		Богданов Д.М.
 --
 -- Описание:
---		функция для получения данных для карточек 
+--		функция получения данных для карточек 
 --		пользователей из резюме
 --
 -- Дата создания:
@@ -60,6 +60,8 @@ as $$
 		group by us.UserID, res.ResumePhoto, res.ExperienceLevel, res.DesiredSalary, res.ResumeBio, res.ResumeSpecialization;
 	end;
 $$;
+
+select * from GetUserCardInformation('Python,C++', 'Programmer,DevSecOps');
 
 
 
