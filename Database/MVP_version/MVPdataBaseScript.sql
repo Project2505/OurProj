@@ -34,6 +34,7 @@ create table Skills
 (
 	SkillID serial primary key,
 	SkillName text not null unique
+	Category text not null
 );
 
 -- таблица-справыочник статусов членов команды (открытый)

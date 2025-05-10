@@ -83,24 +83,24 @@ as $$
 			ResumeStatus,
 			ResumeUpdatedAt,
 			ResumeCity,
-			ResumeSpecialization,
+			ResumeSpecialization
 		)
 		values
 		(
-			p_userid bigint,
-			p_skillid bigint,
-			p_resumebio text,
-			p_resumecreatedat timestamp,
-			p_resumeisdeleted boolean,
-			p_resumephoto text,
-			p_educationlevel text,
-			p_desiredposition text,
-			p_experiencelevel text,
-			p_desiredsalary numeric, 
-			p_resumestatus text,
-			p_resumeupdatedat timestamp,
-			p_resumecity text,
-			p_resumespecialization text
+			p_userid,
+			p_skillid,
+			p_resumebio,
+			p_resumecreatedat,
+			p_resumeisdeleted,
+			p_resumephoto,
+			p_educationlevel,
+			p_desiredposition,
+			p_experiencelevel,
+			p_desiredsalary, 
+			p_resumestatus,
+			p_resumeupdatedat,
+			p_resumecity,
+			p_resumespecialization
 		);
 		
 		exception

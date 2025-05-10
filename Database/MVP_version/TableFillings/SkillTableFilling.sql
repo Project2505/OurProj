@@ -2,6 +2,8 @@
 --	Заполнение таблицы Skills значениями
 --=================================================
 
+rollback;
+
 begin;
 
 set transaction isolation level Serializable;
