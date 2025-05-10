@@ -4,6 +4,6 @@ const router = express.Router();
 
 const skillController = require('../../../controllers/skill.controller');
 
-router.get('/', skillController.getAllSkills); // ← теперь маршрут /skills уже внутри
+router.get('/', skillController.getAllSkills);
 
 module.exports = router;
