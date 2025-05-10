@@ -57,7 +57,7 @@ as $$
 			p_SpecializationFiltr is null or
 			res.ResumeSpecialization = any(string_to_array(p_SpecializationFiltr, ','))
 		)
-		group by us.UserID, res.ResumePhoto, res.ExperienceLevel, res.DesiredSalary, res.ResumeBio;
+		group by us.UserID, res.ResumePhoto, res.ExperienceLevel, res.DesiredSalary, res.ResumeBio, res.ResumeSpecialization;
 	end;
 $$;
 
