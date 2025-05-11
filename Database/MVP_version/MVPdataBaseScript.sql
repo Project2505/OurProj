@@ -26,7 +26,8 @@ create table Users
 	UserPhone text,
 	UserEmail text,
 	UserCreatedAt timestamp default now(),
-	UserIsDeleted boolean default false
+	UserIsDeleted boolean default false,
+	UserPassword text not null
 );
 
 -- таблица-справочник навыков (закрытый справочник)
