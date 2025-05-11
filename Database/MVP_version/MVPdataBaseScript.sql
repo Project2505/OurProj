@@ -84,9 +84,14 @@ create table IssueBoards
 	UserID bigint not null,
 	IssueBoardName text not null,
 	IssueBoardAvatar text,
+	IssueBoardResponsible bigint not null,
 
 	constraint fk_IssueBoardsProj foreign key (ProjectID)
 		references Projects(ProjectID) -- связь доски задач с проектом
+		on update cascade,
+		
+	constraint fk_IssueBoardsResponsible foreign key (IssueBoardResponsible)
+		references Users(UserID) -- связь доски задач с ответственным
 		on update cascade
 );
 
@@ -104,8 +109,33 @@ create table Issues
 
 	constraint fk_issueIssueBoard foreign key (IssueBoardID)
 		references IssueBoards(IssueBoardID) -- связь заданий с их досками
-		on update cascade
+		on update cascade,
+
+	add constraint fk_issue_executor_user foreign key (IssueExecutor)
+    	references Users(UserID)
+    	on update cascade
 );
+
+-- Таблица связей задач 
+create table IssueRelations
+(
+    IssueRelationID serial primary key,
+    ParentIssueID bigint not null,  -- ID родительской задачи
+    ChildIssueID bigint not null,   -- ID дочерней задачи
+    RelationType text,              -- Тип связи (например, "блокирует", "дублирует", "связана")
+    CreatedAt timestamp default now(),
+
+    constraint fk_parent_issue foreign key (ParentIssueID)
+        references Issues(IssueID)
+        on delete cascade,
+        
+    constraint fk_child_issue foreign key (ChildIssueID)
+        references Issues(IssueID)
+        on delete cascade,
+        
+    constraint unique_issue_relation unique (ParentIssueID, ChildIssueID)
+);
+
 
 -- таблица комментариев в задачах
 create table IssuesComments
@@ -449,3 +479,8 @@ create index idx_user_personal_chat_chat on UserPersonalChat(PersonalChatID);
 create index idx_group_participants_user on GroupChatParticipants(user_id);
 create index idx_group_participants_chat on GroupChatParticipants(group_chat_id);
 create index idx_group_participants_last_seen on GroupChatParticipants(last_seen_at);
+
+-- Индексы для таблицы IssueRelations
+create index idx_issue_relations_parent on IssueRelations(ParentIssueID);
+create index idx_issue_relations_child on IssueRelations(ChildIssueID);
+create index idx_issue_relations_type on IssueRelations(RelationType);

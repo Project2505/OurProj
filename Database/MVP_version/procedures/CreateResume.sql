@@ -52,7 +52,7 @@ as $$
 	begin
 	begin
 		if p_userid is null or p_desiredposition is null or p_resumespecialization is null then
-			raise exception 'обязательные поля не могут быть пустыми';
+			raise exception 'Обязательные поля не могут быть пустыми';
 			
 		end if;
 		if p_resumecreatedat is null then
