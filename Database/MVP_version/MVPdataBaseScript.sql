@@ -323,6 +323,35 @@ create table Resume
         on update cascade
 );
 
+create table Vacancies
+(
+	VacancyID serial primary key,
+	ProjectID bigint,
+	SkillID bigint,
+	VacancyName text not null,
+	VacancyBio text,
+	VacancyResponsibilities text, -- обязанности
+	VacancyRequirements text, -- требования
+	VacancyMinExperience int, -- минимальный опыт в годах
+	VacancyEmploymentType text, -- тип занятости (полный/подработка и т.д.)
+	VacancySalaryFrom numeric, -- зп от
+	VacancySalaryTo numeric, -- зп до
+	VacancyCurrecncy text, -- Валюта зп
+	VacancyTypeSalary text, -- зп или доля компании(акции)
+	VacancyCompanyShare numeric, -- доля акций компании в %
+	VacancyIsActive boolean default true,
+	VacancyResponses int,
+	CreatedAt timestamp default now(),
+	ClosedAt timestamp,
+
+	constraint fk_VacanciesProject foreign key (projectID)
+		references Projects(ProjectID)
+		on update cascade,
+	
+	constraint fk_fk_VacanciesSkills foreign key (SkillID)
+		references Skills(SkillID)
+		on update cascade
+);
 
 --=============================================
 --	Создание таблиц связок
@@ -416,6 +445,29 @@ create table ResumeSkills (
     constraint unique_resume_skill unique (ResumeID, SkillID)
 );
 
+-- таблица-связка откликов
+create table VacansiesResponsers
+(
+	ResponseID serial primary key,
+	UserID bigint not null,
+	VacancyID bigint not null,
+	ResumeID bigint not null,
+
+	constraint fk_response_user foreign key (UserID)
+        references Users(UserID)
+        on delete cascade,
+        
+    constraint fk_response_vacancy foreign key (VacancyID)
+        references Vacancies(VacancyID)
+        on delete cascade,
+        
+    constraint fk_response_resume foreign key (ResumeID)
+        references Resume(ResumeID)
+        on delete set null,
+        
+    constraint unique_user_vacancy_pair unique (UserID, VacancyID)  -- Один пользователь → одна заявка на вакансию
+);
+
 
 --=============================================
 --	Создание индексов
@@ -484,3 +536,7 @@ create index idx_group_participants_last_seen on GroupChatParticipants(last_seen
 create index idx_issue_relations_parent on IssueRelations(ParentIssueID);
 create index idx_issue_relations_child on IssueRelations(ChildIssueID);
 create index idx_issue_relations_type on IssueRelations(RelationType);
+
+-- Индексы для таблицы VacancyResponses
+create index idx_vacancy_responses_user on VacancyResponses(UserID);
+create index idx_vacancy_responses_vacancy on VacancyResponses(VacancyID);
