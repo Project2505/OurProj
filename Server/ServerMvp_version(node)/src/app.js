@@ -1,17 +1,18 @@
-// src/app.js
 const express = require('express');
 const routes = require('./routes');
-const errorMiddleware = require('./middleware/error.middlewaer');
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 
+
 // API Routes
-app.use('/api', routes);
+app.use('/api/v1', routes);
 
 // Error handler
-app.use(errorMiddleware);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+});
 
 module.exports = app;
